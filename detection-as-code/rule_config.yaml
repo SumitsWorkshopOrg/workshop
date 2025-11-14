@@ -1,3 +1,6 @@
+new_rule_partner
+  enabled: true
+  alerting: false
 gcp_cloud_threat_actor_unc3944_scattered_spider_discovery_activity-elevate2025:
   alerting: false
   archive_time: null
