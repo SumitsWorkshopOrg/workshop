@@ -1,0 +1,68 @@
+/*
+ * Copyright 2025 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+rule gcp_cloud_threat_actor_unc3944_scattered_spider_discovery_activity {
+  meta:
+    author = "Google Cloud Security"
+    description = "Detects a series of discovery commands commonly associated with the threat actor Scattered Spider (UNC3944) occurring in a short time frame from a single host."
+    rule_id = "mr_b1a9b6a8-0f1a-4b9e-9b0a-3e3e3e3e3e3e"
+    rule_name = "Scattered Spider Discovery Activity"
+    mitre_attack_tactic = "TA0007"
+    mitre_attack_technique = "T1087.002, T1069.002, T1482"
+    type = "hunt"
+    data_source = "microsoft sysmon, microsoft windows events"
+    severity = "Medium"
+    priority = "Medium"
+
+  events:
+    // Event for 'net user /domain'
+    $process_user.metadata.event_type = "PROCESS_LAUNCH"
+    $process_user.principal.hostname = $hostname
+    $process_user.principal.user.userid = $user
+    re.regex($process_user.target.process.command_line, `(?i)net\.exe user /domain`)
+
+    // Event for 'net group /domain'
+    $process_group.metadata.event_type = "PROCESS_LAUNCH"
+    $process_group.principal.hostname = $hostname
+    $process_group.principal.user.userid = $user
+    re.regex($process_group.target.process.command_line, `(?i)net\.exe group /domain`)
+
+    // Event for 'nltest /domain_trusts'
+    $process_trust.metadata.event_type = "PROCESS_LAUNCH"
+    $process_trust.principal.hostname = $hostname
+    $process_trust.principal.user.userid = $user
+    re.regex($process_trust.target.process.command_line, `(?i)nltest\.exe /domain_trusts`)
+
+  match:
+    $hostname, $user over 15m
+
+  outcome:
+    $risk_score = 65
+    $principal_hostname = array_distinct($hostname)
+    $principal_user = array_distinct($user)
+    $command_lines = array_distinct(
+        $process_user.target.process.command_line,
+        $process_group.target.process.command_line,
+        $process_trust.target.process.command_line
+    )
+    $event_count = count_distinct(
+        $process_user.metadata.id,
+        $process_group.metadata.id,
+        $process_trust.metadata.id
+    )
+
+  condition:
+    $process_user and $process_group and $process_trust
+}

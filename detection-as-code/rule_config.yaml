@@ -1,3 +1,27 @@
+gcp_cloud_threat_actor_unc3944_scattered_spider_discovery_activity-elevate2025:
+  alerting: false
+  archive_time: null
+  archived: false
+  create_time: null
+  enabled: false
+  id: null
+  resource_name: null
+  revision_create_time: null
+  revision_id: null
+  run_frequency: LIVE
+  type: MULTI_EVENT
+malware_win_airstalk_elevate2025:
+  alerting: true
+  archive_time: null
+  archived: false
+  create_time: null
+  enabled: true
+  id: null
+  resource_name: null
+  revision_create_time: null
+  revision_id: null
+  run_frequency: LIVE
+  type: SINGLE_EVENT
 PyRDP_Toolkit_UNC5837:
   alerting: false
   archive_time: null
